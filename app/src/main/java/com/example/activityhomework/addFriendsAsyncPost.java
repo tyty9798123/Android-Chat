@@ -4,6 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Map;
@@ -18,12 +23,11 @@ public class addFriendsAsyncPost {
 
     private Context ctx;
     private FragmentActivity act;
-    private Map map;
-
+    private final static String TAG = addFriendsAsyncPost.class.getSimpleName();
     public addFriendsAsyncPost(Context ctx, FragmentActivity act, Map map){
         this.ctx = ctx;
         this.act = act;
-        this.map = map;
+        new send_post().execute(map);
     }
 
     class send_post extends AsyncTask<Map<String, String>, Void, String>{
@@ -33,18 +37,18 @@ public class addFriendsAsyncPost {
             OkHttpClient client = new OkHttpClient();
 
             RequestBody formBody = new FormBody.Builder()
-                    .add("account", maps[0].get("userAccount").toString())
-                    .add("password", maps[0].get("userPassword").toString())
+                    .add("user1ID", maps[0].get("user1ID").toString())
+                    .add("user2Account", maps[0].get("user2Account").toString())
                     .build();
             Request request = new Request.Builder()
-                    .url("http://10.0.2.2:3060/login")
+                    .url("http://10.0.2.2:3060/addfriend")
                     .post(formBody)
                     .build();
 
             try {
                 Response response = client.newCall(request).execute();
-                return response.body().string();
-                // Do something with the response.
+                String responseString = response.body().string();
+                return responseString;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -54,6 +58,21 @@ public class addFriendsAsyncPost {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            JSONObject jsonObject = null;
+            try {
+                jsonObject = new JSONObject(s);
+                String msg = jsonObject.getString("message");
+                if (jsonObject.getString("success").equals("false")){
+                    Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show();
+                    return;
+                }else{
+                    Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show();
+                    //reload(尚未製作)
+                    return;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
