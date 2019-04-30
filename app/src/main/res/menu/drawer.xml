@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/action_home"
+            android:checked="true"
+            android:icon="@drawable/home_icon"
+            android:title="首頁" />
+        <item
+            android:id="@+id/action_signup"
+            android:icon="@drawable/signup_icon"
+            android:title="註冊" />
+
+        <item
+            android:id="@+id/action_login"
+            android:icon="@drawable/login_icon"
+            android:title="登入" />
+        <item
+            android:id="@+id/action_logout"
+            android:icon="@drawable/logout"
+            android:title="登出" />
+
+    </group>
+
+</menu>
