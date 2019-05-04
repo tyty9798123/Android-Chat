@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,6 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.FormBody;
@@ -24,9 +26,11 @@ public class addFriendsAsyncPost {
     private Context ctx;
     private FragmentActivity act;
     private final static String TAG = addFriendsAsyncPost.class.getSimpleName();
-    public addFriendsAsyncPost(Context ctx, FragmentActivity act, Map map){
+    private RecyclerView recyclerView;
+    public addFriendsAsyncPost(Context ctx, FragmentActivity act, Map map, RecyclerView recyclerview){
         this.ctx = ctx;
         this.act = act;
+        this.recyclerView = recyclerview;
         new send_post().execute(map);
     }
 
@@ -68,11 +72,16 @@ public class addFriendsAsyncPost {
                 }else{
                     Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show();
                     //reload(尚未製作)
+                    String getUserID = ctx.getSharedPreferences("auth", Context.MODE_PRIVATE).getString("userID", null);
+                    Map<String, String> map = new HashMap<>();
+                    map.put("userID", getUserID);
+                    new getListDataAsyncGet(ctx, act, map, recyclerView);
                     return;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
         }
     }
 }

@@ -21,15 +21,28 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class HomeFragement extends Fragment {
     private static final String TAG = HomeFragement.class.getSimpleName();
     private static HomeFragement instance;
     private TextView showUserName;
     private Button addFriendsBtn;
-    private RecyclerView recyclerView;
+    public static RecyclerView recyclerView;
+    private Map<String, String> map;
 
     public Context getCurrentContext() {
         Context x = getContext();
@@ -94,14 +107,16 @@ public class HomeFragement extends Fragment {
     public void getChatListData(){
         String userID =  getContext().getSharedPreferences("auth", Context.MODE_PRIVATE).getString("userID", null);
         if (userID != null) {
-            Map<String, String> map = new HashMap<String, String>();
+            map = new HashMap<String, String>();
             map.put("userID", userID);
             new getListDataAsyncGet(getContext(), getActivity(), map, recyclerView);
+            // 以下兩行改到 data onload 之後吧 也就是在 get list 的類別
+            // FriendListAdapter adapter = new FriendListAdapter(getContext());
+            // recyclerView.setAdapter(adapter);
+
         }
-        // 以下兩行改到 data onload 之後吧 也就是在 get list 的類別
-        // FriendListAdapter adapter = new FriendListAdapter(getContext());
-        // recyclerView.setAdapter(adapter);
     }
+
     private Button.OnClickListener addFriendsBtnClicked = new Button.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -121,7 +136,9 @@ public class HomeFragement extends Fragment {
                     Map<String, String> map = new HashMap<>();
                     map.put("user1ID", userID);
                     map.put("user2Account", m_text);
-                    new addFriendsAsyncPost(getContext(), getActivity(), map);
+                    new addFriendsAsyncPost(getContext(), getActivity(), map, recyclerView);
+
+
                 }
             });
 

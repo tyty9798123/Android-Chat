@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.action_login:
                     try {
                         fragmentTransaction = manager.beginTransaction();
+                        fragmentTransaction.remove(HomeFragement.getInstance());
                         fragmentTransaction.replace(R.id.container_fragment, LogInFragment.getInstance());
                         fragmentTransaction.commit();
                     }
@@ -119,8 +120,6 @@ public class MainActivity extends AppCompatActivity {
                     fragmentTransaction.replace(R.id.container_fragment, new LogoutFragment());
                     fragmentTransaction.commit();
                     navigationView.getMenu().getItem(0).setChecked(true);
-
-
                     return false;
             }
             return false;
