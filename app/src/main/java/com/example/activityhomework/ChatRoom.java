@@ -1,23 +1,31 @@
 package com.example.activityhomework;
 
 import android.content.Context;
-import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.Call;
@@ -30,9 +38,10 @@ import okhttp3.Response;
 public class ChatRoom extends AppCompatActivity {
 
     private int roomID;
-    private Socket mSocket;
     private Map<String, String> map;
     private final static String TAG = ChatRoom.class.getSimpleName();
+    public ArrayList< Map<String, String> > userInfo;
+    /*
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -56,12 +65,26 @@ public class ChatRoom extends AppCompatActivity {
             });
         }
     };
+    */
     private String userID;
+    private EditText chatbox;
+    private Button submit;
+    private Socket mSocket;
+    private ScrollView scrollView;
+    private LinearLayout linearLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_room);
+        {
+            try {
+                mSocket = IO.socket("http://10.0.2.2:3060/");
+            } catch (URISyntaxException e) {
+
+            }
+        }
+        findViews();
         /*
             聊天室邏輯：
             1. 取得聊天室ID
@@ -78,22 +101,62 @@ public class ChatRoom extends AppCompatActivity {
         // 3. 獲得聊天室雙方的userData
         __getBothUserData(roomID);
 
-        //連接socket
-        initSocket();
-        mSocket.on("new message", onNewMessage);
+       //連接socket
+        //ㄙmSocket.on("socketData", onNewMessage);
         mSocket.connect();
     }
 
 
+    public void findViews(){
+        linearLayout = findViewById(R.id.linearLayout);
+        chatbox = findViewById(R.id.chatbox);
+        submit = findViewById(R.id.submit);
+        scrollView = findViewById(R.id.scrollView);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String chatText = null;
+                try{
+                    chatText = chatbox.getText().toString();
+                }
+                catch (Exception e){
+                    Toast.makeText(ChatRoom.this, "字串解析不正確", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                if ( chatText.length() > 0){
+                    Map<String, String> map = new HashMap<>();
+                    map.put("roomID", String.valueOf(roomID));
+                    map.put("userID", String.valueOf(userID));
+                    map.put("message", chatbox.getText().toString());
+                    //如果是圖片的話就傳送roomID, userID, image
+                    String stringData = new JSONObject(map).toString();
 
+                    addMessage("","你媽逼啦");
 
-    public void initSocket(){
-        try {
-            mSocket = IO.socket("http:127.0.0.1:3060");
-        } catch (URISyntaxException e) {
-            Toast.makeText(this, "WebSocket未連接成功。", Toast.LENGTH_LONG).show();
-            startActivity(new Intent(this, MainActivity.class));
-        }
+                    mSocket.emit("socketData", stringData);
+                }else{
+                    Toast.makeText(ChatRoom.this, "輸入欄位不得為空", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        });
+    }
+
+    private void addMessage(String name, String message){
+        TextView textView = new TextView(ChatRoom.this);
+        textView.setGravity(Gravity.RIGHT);
+
+        textView.setPadding(10, 10 ,10 ,10);
+        textView.setMaxWidth(30);
+        textView.setBackgroundResource(R.drawable.msg_bg);
+        textView.setText(message);
+
+        ChatRoom.this.linearLayout.addView(textView);
+        scrollView.post(new Runnable() {
+            public void run() {
+                scrollView.fullScroll(View.FOCUS_DOWN);
+            }
+        });
     }
 
     public void __getBothUserData(int roomid){
@@ -115,9 +178,28 @@ public class ChatRoom extends AppCompatActivity {
                     String success = jsonObject.getString("success");
                     if (success.equals("true")){
                         //不要用recyclerView做好了= =!
-
-
-
+                        try {
+                            userInfo = new ArrayList<>();
+                            String result = jsonObject.getString("result");
+                            JSONArray jsonArray = new JSONArray(result);
+                            JSONObject[] userData = {
+                                    new JSONObject(jsonArray.getString(0)),
+                                    new JSONObject(jsonArray.getString(1))
+                            };
+                            for (int i = 0; i < 2; i++){
+                                Map<String, String> map = new HashMap<>();
+                                map.put("UserID", userData[i].getString("UserID"));
+                                map.put("UserName", userData[i].getString("UserName"));
+                                map.put("UserAccount", userData[i].getString("UserAccount"));
+                                map.put("UserPassword", userData[i].getString("UserPassword"));
+                                userInfo.add(map);
+                            }
+                            Log.d(TAG, "UserIDUserID: " + userInfo.get(1).get("UserID"));
+                        }
+                        catch (Exception e){
+                            returnError();
+                            e.printStackTrace();
+                        }
 
                     }else{
                         returnError();
