@@ -1,12 +1,24 @@
+
 package com.example.activityhomework;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -22,32 +34,63 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
 public class ChatRoom extends AppCompatActivity {
-
+    private MessageList adapter;
     private int roomID;
     private Map<String, String> map;
     private final static String TAG = ChatRoom.class.getSimpleName();
     public ArrayList< Map<String, String> > userInfo;
-    /*
+
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "message run: " + args[0]);
+                    String resp = String.valueOf(args[0]);
+                    try {
+                        JSONObject jsonObj = new JSONObject(resp);
+                        String message = jsonObj.getString("message");
+                        String getRoomID = jsonObj.getString("roomID");
+                        if (roomID == Integer.parseInt(getRoomID)){
+                            //addMessageLeft("", message);
+                            Map<String, String> adapterMap = new HashMap<>();
+                            adapterMap.put("userName", userInfo.get(1).get("UserName"));
+                            adapterMap.put("message", message);
+                            adapterMap.put("dateTime", jsonObj.getString("nowDateTime"));
+                            adapterMap.put("viewType", "2");
+                            adapterArray.add(adapterMap);
+                            adapter.notifyItemInserted(adapterArray.size() - 1);
+                            adapter.notifyDataSetChanged();
+
+                            setRecyclerViewToBottom();
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Log.d(TAG, "receive message: " + args[0]);
+                    /*
                     JSONObject data = (JSONObject) args[0];
                     String message;
                     String date_time;
@@ -61,17 +104,61 @@ public class ChatRoom extends AppCompatActivity {
                     map.put("message", message);
                     map.put("date_time", date_time);
                     // add the message to view
+
+                    */
                 }
             });
         }
     };
-    */
+
+    private Emitter.Listener onNewImage = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "message run: " + args[0]);
+                    String resp = String.valueOf(args[0]);
+                    Toast.makeText(ChatRoom.this,"進入了0", Toast.LENGTH_LONG).show();
+
+                    try {
+                        JSONObject jsonObj = new JSONObject(resp);
+                        Toast.makeText(ChatRoom.this,"進入了1", Toast.LENGTH_LONG).show();
+
+                        String fileName = jsonObj.getString("fileName");
+                        String getRoomID = jsonObj.getString("roomID");
+                        if (roomID == Integer.parseInt(getRoomID)){
+                            //addMessageLeft("", message);
+                            Map<String, String> adapterMap = new HashMap<>();
+                            adapterMap.put("fileName", fileName);
+                            adapterMap.put("dateTime", jsonObj.getString("nowDateTime"));
+                            adapterMap.put("viewType", "4");
+                            adapterArray.add(adapterMap);
+                            adapter.notifyItemInserted(adapterArray.size() - 1);
+                            adapter.notifyDataSetChanged();
+
+                            setRecyclerViewToBottom();
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    };
+
+
+    public static final int GET_FROM_GALLERY = 3;
+
     private String userID;
     private EditText chatbox;
     private Button submit;
     private Socket mSocket;
     private ScrollView scrollView;
     private LinearLayout linearLayout;
+    private RecyclerView recyclerView;
+    private ArrayList<Map<String, String>> adapterArray = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,29 +188,47 @@ public class ChatRoom extends AppCompatActivity {
         // 3. 獲得聊天室雙方的userData
         __getBothUserData(roomID);
 
-       //連接socket
-        //ㄙmSocket.on("socketData", onNewMessage);
+        //連接socket
+        mSocket.on("socketData", onNewMessage);
+        mSocket.on("socketImage", onNewImage);
         mSocket.connect();
     }
 
+    public void setRecyclerViewToBottom(){
+        recyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                // Call smooth scroll
+                recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+            }
+        });
+    }
 
-    public void findViews(){
-        linearLayout = findViewById(R.id.linearLayout);
+    public void findViews() {
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        recyclerView = findViewById(R.id.recyclerview2);
         chatbox = findViewById(R.id.chatbox);
-        submit = findViewById(R.id.submit);
+        submit = findViewById(R.id.submiting);
         scrollView = findViewById(R.id.scrollView);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new MessageList(ChatRoom.this, adapterArray);
+        recyclerView.setAdapter(adapter);
+
         submit.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
+                chatbox.onEditorAction(EditorInfo.IME_ACTION_DONE);
                 String chatText = null;
-                try{
+
+                try {
                     chatText = chatbox.getText().toString();
-                }
-                catch (Exception e){
+                } catch (Exception e) {
                     Toast.makeText(ChatRoom.this, "字串解析不正確", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if ( chatText.length() > 0){
+                if (chatText.length() > 0) {
                     Map<String, String> map = new HashMap<>();
                     map.put("roomID", String.valueOf(roomID));
                     map.put("userID", String.valueOf(userID));
@@ -131,10 +236,23 @@ public class ChatRoom extends AppCompatActivity {
                     //如果是圖片的話就傳送roomID, userID, image
                     String stringData = new JSONObject(map).toString();
 
-                    addMessage("","你媽逼啦");
+                    Map<String, String> adapterMap = new HashMap<>();
+                    String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime());
 
+                    adapterMap.put("userName", userInfo.get(0).get("UserName"));
+                    adapterMap.put("message", chatText);
+                    adapterMap.put("dateTime", timeStamp);
+                    adapterMap.put("viewType", "0");
+                    adapterArray.add(adapterMap);
+                    //adapter = new MessageList(ChatRoom.this, adapterArray);
+                    adapter.notifyItemInserted(adapterArray.size() - 1);
+                    adapter.notifyDataSetChanged();
+
+                    setRecyclerViewToBottom();
                     mSocket.emit("socketData", stringData);
-                }else{
+
+                    chatbox.setText("");
+                } else {
                     Toast.makeText(ChatRoom.this, "輸入欄位不得為空", Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -142,22 +260,6 @@ public class ChatRoom extends AppCompatActivity {
         });
     }
 
-    private void addMessage(String name, String message){
-        TextView textView = new TextView(ChatRoom.this);
-        textView.setGravity(Gravity.RIGHT);
-
-        textView.setPadding(10, 10 ,10 ,10);
-        textView.setMaxWidth(30);
-        textView.setBackgroundResource(R.drawable.msg_bg);
-        textView.setText(message);
-
-        ChatRoom.this.linearLayout.addView(textView);
-        scrollView.post(new Runnable() {
-            public void run() {
-                scrollView.fullScroll(View.FOCUS_DOWN);
-            }
-        });
-    }
 
     public void __getBothUserData(int roomid){
         OkHttpClient client = new OkHttpClient();
@@ -177,7 +279,6 @@ public class ChatRoom extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(res);
                     String success = jsonObject.getString("success");
                     if (success.equals("true")){
-                        //不要用recyclerView做好了= =!
                         try {
                             userInfo = new ArrayList<>();
                             String result = jsonObject.getString("result");
@@ -194,7 +295,6 @@ public class ChatRoom extends AppCompatActivity {
                                 map.put("UserPassword", userData[i].getString("UserPassword"));
                                 userInfo.add(map);
                             }
-                            Log.d(TAG, "UserIDUserID: " + userInfo.get(1).get("UserID"));
                         }
                         catch (Exception e){
                             returnError();
@@ -218,5 +318,57 @@ public class ChatRoom extends AppCompatActivity {
                 });
             }
         });
+    }
+
+    public void sendImage(View view){
+        startActivityForResult(
+                new Intent
+                        (Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI),
+                GET_FROM_GALLERY);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        //Detects request codes
+        if(requestCode==GET_FROM_GALLERY && resultCode == Activity.RESULT_OK) {
+            Uri selectedImage = data.getData();
+            Bitmap bitmap = null;
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] imageBytes = baos.toByteArray();
+                String encodedImage = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+                Map<String, String> map = new HashMap<>();
+                map.put("roomID", String.valueOf(roomID));
+                map.put("userID", userID);
+                map.put("encodedImage", encodedImage);
+
+                String stringData = new JSONObject(map).toString();
+
+                mSocket.emit("socketImage", stringData);
+
+                Map<String, String> adapterMap = new HashMap<>();
+                String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime());
+
+                adapterMap.put("userName", userInfo.get(0).get("UserName"));
+                adapterMap.put("encodedImage", String.valueOf(encodedImage));
+                adapterMap.put("dateTime", timeStamp);
+                adapterMap.put("viewType", "3");
+                adapterArray.add(adapterMap);
+                //adapter = new MessageList(ChatRoom.this, adapterArray);
+                adapter.notifyItemInserted(adapterArray.size() - 1);
+                adapter.notifyDataSetChanged();
+                setRecyclerViewToBottom();
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 }

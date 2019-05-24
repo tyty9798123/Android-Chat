@@ -22,6 +22,8 @@
         </activity>
         <activity android:name=".ChatRoom">
         </activity>
+        <activity android:name=".MessageListActivity">
+        </activity>
     </application>
 
 </manifest>

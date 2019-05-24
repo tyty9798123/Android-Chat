@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/imageView_01"
+        android:layout_width="57dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/avatar1" />
+
+    <TextView
+        android:id="@+id/message_01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/rounded_rectangle_green"
+        android:maxWidth="200dp"
+        android:paddingLeft="20dp"
+        android:paddingTop="10dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="10dp"
+        android:text="Message"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toStartOf="@+id/imageView_01"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/datetime_01"
+        android:layout_width="183dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:text="DateTime"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/message_01" />
+</android.support.constraint.ConstraintLayout>
