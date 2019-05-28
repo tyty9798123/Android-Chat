@@ -75,18 +75,27 @@ public class MessageList extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             case 2:
                 ViewHolder2 viewHolder2 = (ViewHolder2)holder;
+                viewHolder2.friendName.setText(arrayList.get(position).get("userName"));
                 viewHolder2.message_02.setText(arrayList.get(position).get("message"));
                 viewHolder2.datetime_02.setText(arrayList.get(position).get("dateTime"));
                 break;
             case 3:
                 ViewHolder3 viewHolder3 = (ViewHolder3)holder;
-                byte[] decodedString = Base64.decode(arrayList.get(position).get("encodedImage"), Base64.DEFAULT);
-                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                viewHolder3.image.setImageBitmap(decodedByte);
+
+                if(arrayList.get(position).get("viewType2").equals("1")){
+                    String imageUrl = "http://10.0.2.2:3060/uploads/" + arrayList.get(position).get("encodedImage");
+                    new DownloadImageTask(viewHolder3.image).execute(imageUrl);
+                }else{
+                    byte[] decodedString = Base64.decode(arrayList.get(position).get("encodedImage"), Base64.DEFAULT);
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    viewHolder3.image.setImageBitmap(decodedByte);
+                }
                 viewHolder3.datetime_03.setText(arrayList.get(position).get("dateTime"));
+
                 break;
             case 4:
                 ViewHolder4 viewHolder4 = (ViewHolder4)holder;
+                viewHolder4.firendName2.setText(arrayList.get(position).get("userName"));
                 String imageUrl = "http://10.0.2.2:3060/uploads/" + arrayList.get(position).get("fileName");
                 new DownloadImageTask(viewHolder4.image).execute(imageUrl);
                 viewHolder4.datetime_04.setText(arrayList.get(position).get("dateTime"));
@@ -135,11 +144,13 @@ public class MessageList extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ImageView imageView_02;
         TextView message_02;
         TextView datetime_02;
+        TextView friendName;
         public ViewHolder2(View itemView){
             super(itemView);
             imageView_02 = itemView.findViewById(R.id.imageView_02);
             message_02 = itemView.findViewById(R.id.message_02);
             datetime_02 = itemView.findViewById(R.id.datetime_02);
+            friendName = itemView.findViewById(R.id.friendName);
         }
     }
     class ViewHolder3 extends RecyclerView.ViewHolder {
@@ -157,11 +168,13 @@ public class MessageList extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ImageView imageView_04;
         ImageView image;
         TextView datetime_04;
+        TextView firendName2;
         public ViewHolder4(View itemView){
             super(itemView);
             imageView_04 = itemView.findViewById(R.id.imageView_04);
             image = itemView.findViewById(R.id.image4);
             datetime_04 = itemView.findViewById(R.id.datetime_04);
+            firendName2 = itemView.findViewById(R.id.friendName2);
         }
     }
 }

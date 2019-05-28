@@ -119,17 +119,16 @@ public class ChatRoom extends AppCompatActivity {
                 public void run() {
                     Log.d(TAG, "message run: " + args[0]);
                     String resp = String.valueOf(args[0]);
-                    Toast.makeText(ChatRoom.this,"進入了0", Toast.LENGTH_LONG).show();
 
                     try {
                         JSONObject jsonObj = new JSONObject(resp);
-                        Toast.makeText(ChatRoom.this,"進入了1", Toast.LENGTH_LONG).show();
 
                         String fileName = jsonObj.getString("fileName");
                         String getRoomID = jsonObj.getString("roomID");
                         if (roomID == Integer.parseInt(getRoomID)){
                             //addMessageLeft("", message);
                             Map<String, String> adapterMap = new HashMap<>();
+                            adapterMap.put("userName", userInfo.get(1).get("UserName"));
                             adapterMap.put("fileName", fileName);
                             adapterMap.put("dateTime", jsonObj.getString("nowDateTime"));
                             adapterMap.put("viewType", "4");
@@ -194,6 +193,96 @@ public class ChatRoom extends AppCompatActivity {
         mSocket.connect();
     }
 
+    public void readHistory(){
+        OkHttpClient client = new OkHttpClient();
+        final Request request =  new Request.Builder().url("http://10.0.2.2:3060/gethistory?roomid="+ roomID).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                filure();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String res = response.body().string();
+                try {
+                    JSONObject jsonObject = new JSONObject(res);
+                    if (jsonObject.getString("success").equals("true")){
+                        JSONArray jsonArray = new JSONArray(jsonObject.getString("result"));
+                        for (int i = 0; i < jsonArray.length(); i++){
+                            final JSONObject row = new JSONObject(jsonArray.get(i).toString());
+                            if ( row.getString("message").contains(".jpg") ){
+                                if ( row.getString("userID").equals( userID ) ) {
+                                    Map<String, String> adapterMap = new HashMap<>();
+                                    adapterMap.put("userName", userInfo.get(0).get("UserName"));
+                                    adapterMap.put("encodedImage", String.valueOf(row.getString("message")));
+                                    adapterMap.put("dateTime", row.getString("dateTime"));
+                                    adapterMap.put("viewType", "3");
+                                    adapterMap.put("viewType2", "1");
+                                    adapterArray.add(adapterMap);
+                                    //adapter = new MessageList(ChatRoom.this, adapterArray);
+                                    adapter.notifyItemInserted(adapterArray.size() - 1);
+                                    adapter.notifyDataSetChanged();
+                                    setRecyclerViewToBottom();
+                                }else{
+                                    Map<String, String> adapterMap = new HashMap<>();
+                                    adapterMap.put("userName", userInfo.get(1).get("UserName"));
+                                    adapterMap.put("fileName", row.getString("message"));
+                                    adapterMap.put("dateTime", row.getString("dateTime"));
+                                    adapterMap.put("viewType", "4");
+                                    adapterArray.add(adapterMap);
+                                    adapter.notifyItemInserted(adapterArray.size() - 1);
+                                    adapter.notifyDataSetChanged();
+
+                                    setRecyclerViewToBottom();
+                                }
+                            }else{
+                                if ( row.getString("userID").equals( userID ) ){
+                                    Map<String, String > adapterMap = new HashMap<>();
+                                    adapterMap.put("userName", userInfo.get(0).get("UserName"));
+                                    adapterMap.put("message", row.getString("message"));
+                                    adapterMap.put("dateTime", row.getString("dateTime"));
+                                    adapterMap.put("viewType", "0");
+                                    adapterArray.add(adapterMap);
+                                    //adapter = new MessageList(ChatRoom.this, adapterArray);
+                                    adapter.notifyItemInserted(adapterArray.size() - 1);
+                                    adapter.notifyDataSetChanged();
+                                    setRecyclerViewToBottom();
+                                }else{
+                                    Map<String, String> adapterMap = new HashMap<>();
+                                    adapterMap.put("userName", userInfo.get(1).get("UserName"));
+                                    adapterMap.put("message", row.getString("message"));
+                                    adapterMap.put("dateTime", row.getString("dateTime"));
+                                    adapterMap.put("viewType", "2");
+                                    adapterArray.add(adapterMap);
+                                    adapter.notifyItemInserted(adapterArray.size() - 1);
+                                    adapter.notifyDataSetChanged();
+
+                                    setRecyclerViewToBottom();
+                                }
+                            }
+                        }
+                    }else{
+                        filure();
+                    }
+
+                } catch (JSONException e) {
+                    filure();
+                    e.printStackTrace();
+                }
+            }
+            public void filure(){
+                ChatRoom.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(ChatRoom.this ,"還沒有任何對話紀錄。", Toast.LENGTH_LONG).show();
+                    }
+                });
+                return;
+            }
+        });
+
+    }
     public void setRecyclerViewToBottom(){
         recyclerView.post(new Runnable() {
             @Override
@@ -214,7 +303,6 @@ public class ChatRoom extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new MessageList(ChatRoom.this, adapterArray);
         recyclerView.setAdapter(adapter);
-
         submit.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -235,9 +323,14 @@ public class ChatRoom extends AppCompatActivity {
                     map.put("message", chatbox.getText().toString());
                     //如果是圖片的話就傳送roomID, userID, image
                     String stringData = new JSONObject(map).toString();
-
+                    Calendar a =  Calendar.getInstance();
+                    a.add(Calendar.SECOND, 173); //克服時間上的誤差
                     Map<String, String> adapterMap = new HashMap<>();
-                    String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(Calendar.getInstance().getTime());
+                    String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(
+                            a.getTime()
+                    );
+
+
 
                     adapterMap.put("userName", userInfo.get(0).get("UserName"));
                     adapterMap.put("message", chatText);
@@ -295,6 +388,7 @@ public class ChatRoom extends AppCompatActivity {
                                 map.put("UserPassword", userData[i].getString("UserPassword"));
                                 userInfo.add(map);
                             }
+                            readHistory();
                         }
                         catch (Exception e){
                             returnError();

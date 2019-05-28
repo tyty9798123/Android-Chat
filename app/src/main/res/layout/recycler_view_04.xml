@@ -19,8 +19,7 @@
         android:id="@+id/datetime_04"
         android:layout_width="183dp"
         android:layout_height="30dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="220dp"
+        android:layout_marginEnd="168dp"
         android:gravity="center"
         android:text="DateTime"
         app:layout_constraintEnd_toEndOf="parent"
@@ -29,10 +28,18 @@
     <ImageView
         android:id="@+id/image4"
         android:layout_width="191dp"
-        android:layout_height="171dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="162dp"
+        android:layout_marginTop="28dp"
         app:layout_constraintStart_toEndOf="@+id/imageView_04"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/login_image" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/friendName2"
+        android:layout_width="166dp"
+        android:layout_height="26dp"
+        android:layout_marginStart="12dp"
+        android:text="TextView"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/image4"
+        app:layout_constraintStart_toEndOf="@+id/imageView_04" />
 </android.support.constraint.ConstraintLayout>
