@@ -183,7 +183,7 @@ public class ChatRoom extends AppCompatActivity {
         // 1. 取得聊天室ID
         roomID = getSharedPreferences("ChatRoom", MODE_PRIVATE).getInt("roomid", 0);
         // 2. 取得自身USERID
-        userID = getSharedPreferences("auth", Context.MODE_PRIVATE).getString("userID", null);
+        userID = getSharedPreferences("auth", Context.MODE_PRIVATE).getString("userID", "");
         // 3. 獲得聊天室雙方的userData
         __getBothUserData(roomID);
 
@@ -226,7 +226,14 @@ public class ChatRoom extends AppCompatActivity {
                                     setRecyclerViewToBottom();
                                 }else{
                                     Map<String, String> adapterMap = new HashMap<>();
-                                    adapterMap.put("userName", userInfo.get(1).get("UserName"));
+                                    String userName = "";
+                                    for (int j = 0; j < userInfo.size(); j++) {
+                                        if ( !userID.equals(userInfo.get(j).get("UserID")) ){
+                                            userName = userInfo.get(j).get("UserName");
+                                            adapterMap.put("userName", userName);
+                                            break;
+                                        }
+                                    }
                                     adapterMap.put("fileName", row.getString("message"));
                                     adapterMap.put("dateTime", row.getString("dateTime"));
                                     adapterMap.put("viewType", "4");
@@ -250,7 +257,14 @@ public class ChatRoom extends AppCompatActivity {
                                     setRecyclerViewToBottom();
                                 }else{
                                     Map<String, String> adapterMap = new HashMap<>();
-                                    adapterMap.put("userName", userInfo.get(1).get("UserName"));
+                                    String userName = "";
+                                    for (int j = 0; j < userInfo.size(); j++) {
+                                        if ( !userID.equals(userInfo.get(j).get("UserID")) ){
+                                            userName = userInfo.get(j).get("UserName");
+                                            adapterMap.put("userName", userName);
+                                            break;
+                                        }
+                                    }
                                     adapterMap.put("message", row.getString("message"));
                                     adapterMap.put("dateTime", row.getString("dateTime"));
                                     adapterMap.put("viewType", "2");
@@ -324,7 +338,6 @@ public class ChatRoom extends AppCompatActivity {
                     //如果是圖片的話就傳送roomID, userID, image
                     String stringData = new JSONObject(map).toString();
                     Calendar a =  Calendar.getInstance();
-                    a.add(Calendar.SECOND, 173); //克服時間上的誤差
                     Map<String, String> adapterMap = new HashMap<>();
                     String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(
                             a.getTime()
@@ -451,6 +464,8 @@ public class ChatRoom extends AppCompatActivity {
                 adapterMap.put("encodedImage", String.valueOf(encodedImage));
                 adapterMap.put("dateTime", timeStamp);
                 adapterMap.put("viewType", "3");
+                adapterMap.put("viewType2", "0");
+
                 adapterArray.add(adapterMap);
                 //adapter = new MessageList(ChatRoom.this, adapterArray);
                 adapter.notifyItemInserted(adapterArray.size() - 1);
