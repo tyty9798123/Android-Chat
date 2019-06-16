@@ -43,7 +43,7 @@ public class SignUpAsyncPost {
                     .add("password", maps[0].get("userPassword").toString())
                     .build();
             Request request = new Request.Builder()
-                    .url("http://10.0.2.2:3060/signup")
+                    .url("http://172.105.226.60:3060/signup")
                     .post(formBody)
                     .build();
 

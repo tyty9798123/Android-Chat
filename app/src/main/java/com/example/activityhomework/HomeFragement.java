@@ -77,7 +77,8 @@ public class HomeFragement extends Fragment {
         }else{
             showUserName.setTextColor(Color.RED);
             showUserName.setTextSize(20);
-            showUserName.setText("您尚未登入");
+
+            showUserName.setText("您尚未登入，登入後才可與人溝通。");
         }
         Menu nav_Menu = MainActivity.navigationView.getMenu();
         if (userID == null){

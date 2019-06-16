@@ -42,7 +42,7 @@ public class getListDataAsyncGet {
     }
     private void __HttpGet() {
         OkHttpClient client = new OkHttpClient();
-        final Request request =  new Request.Builder().url("http://10.0.2.2:3060/getfriends?userid="+ map.get("userID")).build();
+        final Request request =  new Request.Builder().url("http://172.105.226.60:3060/getfriends?userid="+ map.get("userID")).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {

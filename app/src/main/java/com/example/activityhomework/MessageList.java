@@ -21,10 +21,6 @@ public class MessageList extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context context;
     private ArrayList<Map<String, String>> arrayList;
-    @Override
-    public int getItemViewType(int position) {
-        return Integer.valueOf(arrayList.get(position).get("viewType"));
-    }
 
     @Override
     public int getItemCount() {
@@ -34,6 +30,11 @@ public class MessageList extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public MessageList(Context context, ArrayList<Map<String, String>> arrayList){
         this.context = context;
         this.arrayList = arrayList;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return Integer.valueOf(arrayList.get(position).get("viewType"));
     }
 
     @Override
@@ -83,7 +84,7 @@ public class MessageList extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 ViewHolder3 viewHolder3 = (ViewHolder3)holder;
 
                 if(arrayList.get(position).get("viewType2").equals("1")){
-                    String imageUrl = "http://10.0.2.2:3060/uploads/" + arrayList.get(position).get("encodedImage");
+                    String imageUrl = "http://172.105.226.60:3060/uploads/" + arrayList.get(position).get("encodedImage");
                     new DownloadImageTask(viewHolder3.image).execute(imageUrl);
                 }else{
                     byte[] decodedString = Base64.decode(arrayList.get(position).get("encodedImage"), Base64.DEFAULT);
@@ -96,7 +97,7 @@ public class MessageList extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             case 4:
                 ViewHolder4 viewHolder4 = (ViewHolder4)holder;
                 viewHolder4.firendName2.setText(arrayList.get(position).get("userName"));
-                String imageUrl = "http://10.0.2.2:3060/uploads/" + arrayList.get(position).get("fileName");
+                String imageUrl = "http://172.105.226.60:3060/uploads/" + arrayList.get(position).get("fileName");
                 new DownloadImageTask(viewHolder4.image).execute(imageUrl);
                 viewHolder4.datetime_04.setText(arrayList.get(position).get("dateTime"));
                 break;

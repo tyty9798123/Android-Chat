@@ -45,7 +45,7 @@ public class LogInAsyncPost{
                     .add("password", maps[0].get("userPassword").toString())
                     .build();
             Request request = new Request.Builder()
-                    .url("http://10.0.2.2:3060/login")
+                    .url("http://172.105.226.60:3060/login")
                     .post(formBody)
                     .build();
 
@@ -121,7 +121,6 @@ public class LogInAsyncPost{
                     }
                 }
                 if (id.length() > 0 && name.length() > 0){
-                    Toast.makeText(ctx, id + "," + name, Toast.LENGTH_SHORT).show();
                     ctx.getSharedPreferences("auth", Context.MODE_PRIVATE).edit().putString("userID", id).commit();
                     ctx.getSharedPreferences("auth", Context.MODE_PRIVATE).edit().putString("userName", name).commit();
 

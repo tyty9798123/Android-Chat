@@ -45,7 +45,7 @@ public class addFriendsAsyncPost {
                     .add("user2Account", maps[0].get("user2Account").toString())
                     .build();
             Request request = new Request.Builder()
-                    .url("http://10.0.2.2:3060/addfriend")
+                    .url("http://172.105.226.60:3060/addfriend")
                     .post(formBody)
                     .build();
 

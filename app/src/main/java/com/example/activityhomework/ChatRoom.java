@@ -75,7 +75,14 @@ public class ChatRoom extends AppCompatActivity {
                         if (roomID == Integer.parseInt(getRoomID)){
                             //addMessageLeft("", message);
                             Map<String, String> adapterMap = new HashMap<>();
-                            adapterMap.put("userName", userInfo.get(1).get("UserName"));
+                            String UserName = null;
+                            for (int i = 0; i < 2; i++){
+                                if (!userInfo.get(i).get("UserID").equals(userID)){
+                                    UserName = userInfo.get(i).get("UserName");
+                                    break;
+                                }
+                            }
+                            adapterMap.put("userName", UserName);
                             adapterMap.put("message", message);
                             adapterMap.put("dateTime", jsonObj.getString("nowDateTime"));
                             adapterMap.put("viewType", "2");
@@ -128,7 +135,14 @@ public class ChatRoom extends AppCompatActivity {
                         if (roomID == Integer.parseInt(getRoomID)){
                             //addMessageLeft("", message);
                             Map<String, String> adapterMap = new HashMap<>();
-                            adapterMap.put("userName", userInfo.get(1).get("UserName"));
+                            String UserName = null;
+                            for (int i = 0; i < 2; i++){
+                                if (!userInfo.get(i).get("UserID").equals(userID)){
+                                    UserName = userInfo.get(i).get("UserName");
+                                    break;
+                                }
+                            }
+                            adapterMap.put("userName", UserName);
                             adapterMap.put("fileName", fileName);
                             adapterMap.put("dateTime", jsonObj.getString("nowDateTime"));
                             adapterMap.put("viewType", "4");
@@ -165,7 +179,7 @@ public class ChatRoom extends AppCompatActivity {
         setContentView(R.layout.activity_chat_room);
         {
             try {
-                mSocket = IO.socket("http://10.0.2.2:3060/");
+                mSocket = IO.socket("http://172.105.226.60:3060/");
             } catch (URISyntaxException e) {
 
             }
@@ -195,7 +209,7 @@ public class ChatRoom extends AppCompatActivity {
 
     public void readHistory(){
         OkHttpClient client = new OkHttpClient();
-        final Request request =  new Request.Builder().url("http://10.0.2.2:3060/gethistory?roomid="+ roomID).build();
+        final Request request =  new Request.Builder().url("http://172.105.226.60:3060/gethistory?roomid="+ roomID).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -344,7 +358,6 @@ public class ChatRoom extends AppCompatActivity {
                     );
 
 
-
                     adapterMap.put("userName", userInfo.get(0).get("UserName"));
                     adapterMap.put("message", chatText);
                     adapterMap.put("dateTime", timeStamp);
@@ -369,7 +382,7 @@ public class ChatRoom extends AppCompatActivity {
 
     public void __getBothUserData(int roomid){
         OkHttpClient client = new OkHttpClient();
-        final Request request =  new Request.Builder().url("http://10.0.2.2:3060/getbothdata?roomid="+ roomid).build();
+        final Request request =  new Request.Builder().url("http://172.105.226.60:3060/getbothdata?roomid="+ roomid).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -438,7 +451,6 @@ public class ChatRoom extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
 
-        //Detects request codes
         if(requestCode==GET_FROM_GALLERY && resultCode == Activity.RESULT_OK) {
             Uri selectedImage = data.getData();
             Bitmap bitmap = null;

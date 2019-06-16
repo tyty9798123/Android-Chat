@@ -33,7 +33,7 @@ public class getRoomIDAsyncGet {
     private void __HttpGet() {
         OkHttpClient client = new OkHttpClient();
         Log.d(TAG, "__HttpGet: " + map.get("friendid"));
-        final Request request =  new Request.Builder().url("http://10.0.2.2:3060/getroomid?friendid="+ map.get("friendid")).build();
+        final Request request =  new Request.Builder().url("http://172.105.226.60:3060/getroomid?friendid="+ map.get("friendid")).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
